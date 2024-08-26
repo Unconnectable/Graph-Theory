@@ -1,0 +1,117 @@
+[P4427 [BJOI2018\] 求和  (luogu.com.cn)](https://www.luogu.com.cn/problem/P4427)
+
+题目大意:求有根树上从u到v的路径上的所有点的深度的k次方的和取模
+
+60pts做法:dfs求路径然后快速幂求和
+
+复杂度O(m*n)
+
+```cpp
+#include <cstdio>
+#include <queue>
+#include <deque>
+#include <stack>
+#include <map>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
+#include <cstring>
+#include <vector>
+#define ep emplace_back 
+
+#define lld long long 
+#define ios std::ios::sync_with_stdio(false);std::cin.tie(0); 
+#define vec vector 
+const int N = 300000+2;
+const int INF = 0x7FFFFFFF; //2147483647
+const int MOD = 998244353;
+const int inf1 = 0x3f3f3f3f; //1061109567
+const int inf2 = 0x7f7f7f7f; //2139062143 memset赋值用
+
+using namespace std;
+int head[N],idx=0;
+struct node{
+    int to,val,next;
+};
+node e[N<<1];
+int n,m;
+void add(int u,int v,int val){
+    e[idx] = {v,val,head[u]};
+    head[u] = idx++;
+}
+void bd(){
+    cin>>n;
+    memset(head,-1,sizeof(head));
+    for(int i=1 ; i<=n-1 ; ++i){
+        int u,v,val;
+        cin>>u>>v;
+        add(u,v,0);
+        add(v,u,0);
+    }
+}
+int fa[N];
+int dep[N];
+vec<bool>vis(N,0);
+//预处理树上的每个节点的深度和他的父亲
+void dfs(int u,int father){
+    fa[u] = father;
+    for(int i=head[u]  ;i!=-1 ; i=e[i].next){
+        int v= e[i].to;
+        if(v==father) continue;
+        dep[v] = dep[u]+1;
+        dfs(v,u);
+    }
+}
+//暴力dfs求路径
+bool reco(int u,int v ,vec<int>& path){
+    vis[u]=1;
+    path.push_back(u);
+    if(u==v) return 1;
+    for(int i=head[u] ; i!=-1 ; i=e[i].next){
+        int to = e[i].to;
+        if(!vis[to]){
+            if(reco(to,v,path))
+            return 1;
+        }
+    }
+    path.pop_back();
+    return 0;
+};
+  
+long long modPow(long long a, long long b, int mod) {
+    long long result = 1;
+    a %= mod;
+    while (b > 0) {
+        if (b % 2 == 1) {
+            result = (result * a) % mod;
+        }
+        a = (a * a) % mod;
+        b /= 2;
+    }
+    return result;
+}
+int main(){
+    ios;
+    bd();
+    cin>>m;
+    int ROOT = 1;
+    dfs(ROOT,-1);
+    
+    for(int i=1 ; i<=m; ++i){
+        int u,v,k;
+        cin>>u>>v>>k;
+        vec<int>path;
+        reco(u,v,path);
+        vis.assign(n+2,0);
+        lld ans=0;
+        for(auto x:path){
+            ans = (ans + modPow(dep[x],k,MOD)) % MOD;
+        }
+        cout<<ans<<"\n";
+    }
+    return 0;
+}
+```
+
+
+
